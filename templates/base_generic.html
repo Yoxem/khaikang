@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta charset="utf-8">
+  {% block title %}<title>Local Library</title>{% endblock %}
+</head>
+  <body>
+	
+	<h1 id="title">{%block title}Kianting.social{%endblock title}</h1>
+	<div id="headbar">{% block headbar %}{% endblock headbar%}</div>
+  <div id="sidebar">{% block sidebar %}<!-- insert default navigation text for every page -->{% endblock %}</div>
+  <div id="content">{% block content %}<!-- default content text (typically empty) -->{% endblock %}</div>
+</body>
+</html>
