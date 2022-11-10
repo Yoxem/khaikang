@@ -1,0 +1,12 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<form method="POST" id="posting-form">
+    {% csrf_token %}
+    <div class="posting-form-group">
+      <label>Post</label>
+      <input type="text" class="form-post" id="post_text" placeholder="What do you want to post?">
+    </div>
+     <button type="submit_post" class="btn">Post!</button>
+  </form>
+{% endblock %}
