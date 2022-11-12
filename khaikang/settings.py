@@ -126,3 +126,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # automatically redirect to home page (/home) after login.
 LOGIN_REDIRECT_URL = '/home'
+
+# custom users
+AUTH_USER_MODEL = 'khaikang.User'
+
+# timezone
+USE_TZ = True

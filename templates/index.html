@@ -1,12 +1,94 @@
 {% extends "base_generic.html" %}
 
+{% load tz %}
+{% get_current_timezone as TIME_ZONE %}
 {% block content %}
 <form method="POST" id="posting-form">
     {% csrf_token %}
     <div class="posting-form-group">
       <label>Post</label>
-      <input type="text" class="form-post" id="post_text" placeholder="What do you want to post?">
+
+      <textarea id="post_text" name="post_text" placeholder="What do you want to post?"
+      maxlength="500" style="resize: none;"  oninput="auto_expand(this)"></textarea>
     </div>
-     <button type="submit_post" class="btn">Post!</button>
+
+    {% csrf_token %} 
+
+    <label for="privilege">Privileges:</label>
+
+    <select name="privilege" id="privil_choosing">
+      <option value="public" selected>Public Timeline</option>
+      <option value="unpublic">Not in Public Timeline</option>
+      <option value="private">Private</option>
+    </select> 
+
+     <button id="submit_post"  type="button" class="btn">Post!</button>
   </form>
+
+  <div id="public_timeline">
+    {% for public_post in public_timeline_list %}
+
+  <div id="post-{{public_post.id}}" class="post"><a href="user/{{public_post.poster}}">{{public_post.poster.shown_name}}</a>
+    at <a href="post/{{public_post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s"}}+0000</a><br/>
+    {{public_post.text}}</div>
+  {% endfor %}
+  </div>
+
+
+  <script>
+
+    function timezoneChanging(){
+        document.querySelectorAll(".post-time").forEach(
+            (x)=>{var date= new Date(x.innerHTML);
+                var year = date.getFullYear().toString();
+                var month = (date.getMonth()+1).toString().padStart(2, '0');
+                var day = date.getDate().toString().padStart(2, '0');
+                var hour = date.getHours().toString().padStart(2, '0');
+                var min = date.getMinutes().toString().padStart(2, '0');
+                var sec = date.getSeconds().toString().padStart(2, '0');
+                local_date_string = `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+                x.innerHTML=local_date_string;}
+                );
+    }
+
+    $name = (x) => document.getElementsByName(x);
+    $ = (x) => document.getElementById(x);
+    var httpRequest;
+    $("submit_post").addEventListener('click', make_req);
+
+  async function make_req() {
+
+    post_text = $('post_text').value;
+    post_privilage = $('privil_choosing').value;
+
+    await fetch('/api/post', {
+    method: 'POST',
+    headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        "privilage" : post_privilage,
+        "text": post_text,
+    })
+    
+    });
+
+}
+
+function auto_expand(element) {
+    element.style.height = 6+"em";
+    element.style.height = (element.scrollHeight)+"px";
+}
+
+timezoneChanging();
+
+function adjust_post_text(){
+    var post_text = $("post_text");
+    post_text.style.height = 6+"em";
+    post_text.style.height = (post_text.scrollHeight)+"px";
+}
+
+adjust_post_text();
+</script>
 {% endblock %}
