@@ -11,6 +11,28 @@ from django.http import JsonResponse
 from django.core import serializers
 from django.db.models import Q
 
+def api_get_previous_posts(request):
+    if request.method == 'POST':
+        post_body_orig = request.body.decode('utf-8')
+        post_body_json = json.loads(post_body_orig)
+        oldest_time = post_body_json["oldest_time"]
+        oldest_datetime_object = datetime.strptime(oldest_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        older_posts = Post.objects.filter(post_time__lt=oldest_datetime_object).order_by('-id')[:20]
+        older_posts_list = [{"id" : o.pk, 
+                    "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
+                    "poster_username" : o.poster.username,
+                    "poster_shown_name":o.poster.shown_name ,
+                    "text": o.text}
+                    for o in older_posts]
+        if len(list(older_posts)) > 0:
+            oldest_time = datetime.strftime(list(older_posts)[-1].post_time, "%Y-%m-%d %H:%M:%S.%f%z")
+        else:
+            oldest_time = oldest_time
+        return JsonResponse({'older_posts':older_posts_list,      
+                            'oldest_time': oldest_time})
+
+
+
 def api_get_latest_posts(request):
     if request.method == 'POST':
         post_body_orig = request.body.decode('utf-8')
@@ -91,10 +113,10 @@ def home(request):
     if request.user == AnonymousUser():
         return redirect('/account/login')   # redirect to main page
     
-    public_timeline_list = Post.objects.filter(privilage = 'public').order_by('-id')[:10]
+    public_timeline_list = Post.objects.filter(privilage = 'public').order_by('-id')[:20]
     
     latest_received_time = timezone.now()
-    oldest_received_time = public_timeline_list[9].post_time
+    oldest_received_time = public_timeline_list[19].post_time
     
     template = loader.get_template('index.html')
 

@@ -33,12 +33,13 @@
 
   <div id="post-{{public_post.id}}" class="post"><a href="user/{{public_post.poster}}">{{public_post.poster.shown_name}}</a>
     at <a href="post/{{public_post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
-    {{public_post.text}}<br/>
+    {{public_post.text|linebreaksbr}}<br/>
     <span id="reply-{{public_post.id}}" value="{{public_post.id}}" class="reply">↩️</span>
     - <span id="repost-{{public_post.id}}" value="{{public_post.id}}" class="repost">🔁</span> 
     - <span id="fav-{{public_post.id}}" value="{{public_post.id}}" class="fav">⭐</span>
 </div>
   {% endfor %}
+  <div id="previous_post_loader">More posts</div>
   <div id="oldest_time" style="display: block;">{{oldest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
 
   </div>
@@ -139,6 +140,34 @@ if (newer_posts_num > 1)
 
 var intervalID = window.setInterval(getRecentPostsCounter, 20000);
 
+function appendPostToTheEnd(post){
+    var public_tl = $("public_timeline");
+    var new_div = createPostDiv(post);
+
+
+    public_tl.insertBefore(new_div, $('previous_post_loader'));
+}
+
+async function getPreviousPosts(){
+    var new_oldest_time;
+    oldest_time_string = $("oldest_time").innerHTML;
+    await fetch('/api/get_previous_posts', {
+        method: 'POST',
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            "oldest_time" : oldest_time_string,
+    }) }).then(response => response.json())
+    .then(item => {new_oldest_time_raw = item['oldest_time'];
+                    new_oldest_time =  new_oldest_time_raw.substring(0,10) + " " + new_oldest_time_raw.substring(11,26) + "+0000";
+                    return item['older_posts'];})
+    .then(posts => {if (posts.length == 0)
+                    {$('previous_post_loader').style.display = 'none';}
+                    else{posts.forEach(post => appendPostToTheEnd(post));
+                                $('oldest_time').innerHTML = new_oldest_time;}})
+}
 
 
 async function getLatestPosts(){
@@ -153,22 +182,23 @@ async function getLatestPosts(){
             "latest_time" : latest_time_string,
     }) }).then(response => response.json())
     .then(item => item['newer_posts'])
-    .then(posts => {posts.forEach(post => add_post_to_the_beginning(post));
+    .then(posts => {posts.forEach(post => addPostToTheBeginning(post));
             $('new_post_notifier').style.display = "none";
             var nowTime = new Date();
             var nowTimeString = nowTime.toISOString();
             $("latest_time").innerHTML = nowTimeString.substring(0,10) + " " + nowTimeString.substring(11,23) + "000+0000"; });
 }
 
-function add_post_to_the_beginning(post){
-    console.log(post);
-    var public_tl = $("public_timeline");
+function createPostDiv(post){
+    
     var new_div = document.createElement("div");
     new_div.id =  `post-${post.id}`;
     new_div.className = "post";
+    post_text_replaced = post.text.replace(/(\r\n|\n\r|\r|\n)/g, "<br>" );
+    console.log(post_text_replaced);
     new_div.innerHTML = `<a href="user/${post.poster_username}">${post.poster_shown_name}</a>
     at <a href="post/${post.id}" class="post-time">${post.post_time}</a><br>
-    ${post.text}<br>
+    ${post_text_replaced}<br>
     <span id="reply-${post.id}" value="${post.id}" class="reply">↩️</span>
     - <span id="repost-${post.id}" value="${post.id}" class="repost">🔁</span> 
     - <span id="fav-${post.id}" value="${post.id}" class="fav">⭐</span>`;
@@ -177,12 +207,20 @@ function add_post_to_the_beginning(post){
 
     timezoneChangingOne(new_div_timestamp);
 
+    return new_div;
+}
+
+function addPostToTheBeginning(post){
+    var public_tl = $("public_timeline");
+    var new_div = createPostDiv(post);
+
 
     public_tl.insertBefore(new_div, $('latest_time').nextSibling);
 
 }
 
 $("new_post_notifier").addEventListener('click', getLatestPosts);
+$("previous_post_loader").addEventListener('click', getPreviousPosts);
 
 
 
