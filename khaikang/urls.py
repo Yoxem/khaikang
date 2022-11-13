@@ -24,4 +24,6 @@ urlpatterns = [
     path('home/',  views.home, name='home'),
     path('signup/',  views.signup),
     path('api/post', views.api_post),
+    path('api/get_recent_posts_counter', views.api_get_recent_posts_counter),
+    path('api/get_latest_posts', views.api_get_latest_posts),
 ]

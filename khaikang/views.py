@@ -6,6 +6,36 @@ from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from django.contrib.auth.models import AnonymousUser
+from datetime import datetime
+from django.http import JsonResponse
+from django.core import serializers
+from django.db.models import Q
+
+def api_get_latest_posts(request):
+    if request.method == 'POST':
+        post_body_orig = request.body.decode('utf-8')
+        post_body_json = json.loads(post_body_orig)
+        latest_time = post_body_json["latest_time"]
+        latest_datetime_object = datetime.strptime(latest_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        newer_posts = Post.objects.filter(post_time__gte=latest_datetime_object)
+        newer_posts_list = [{"id" : o.pk, 
+                            "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
+                            "poster_username" : o.poster.username,
+                            "poster_shown_name":o.poster.shown_name ,
+                            "text": o.text}
+                            for o in newer_posts]
+        return JsonResponse({'newer_posts':newer_posts_list})
+
+def api_get_recent_posts_counter(request):
+    if request.method == 'POST':
+        post_body_orig = request.body.decode('utf-8')
+        post_body_json = json.loads(post_body_orig)
+        latest_time = post_body_json["latest_time"]
+        latest_datetime_object = datetime.strptime(latest_time, '%Y-%m-%d %H:%M:%S.%f%z')
+        newer_posts_len = Post.objects.filter(post_time__gte=latest_datetime_object).exclude(Q(poster=request.user) & Q(post_time=latest_datetime_object)).__len__()
+        return JsonResponse({'newer_posts_num':newer_posts_len})
+
+
 
 def api_post(request):
     if request.method == 'POST':
@@ -58,14 +88,19 @@ def signup(request):
 
 def home(request):
 
+    if request.user == AnonymousUser():
+        return redirect('/account/login')   # redirect to main page
+    
     public_timeline_list = Post.objects.filter(privilage = 'public').order_by('-id')[:10]
     
-
-    print(public_timeline_list)
-
+    latest_received_time = timezone.now()
+    oldest_received_time = public_timeline_list[9].post_time
+    
     template = loader.get_template('index.html')
 
     context = {
+        'latest_received_time' : latest_received_time,
+        'oldest_received_time' : oldest_received_time,
         'public_timeline_list': public_timeline_list,
     }
     return HttpResponse(template.render(context, request))
