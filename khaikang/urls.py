@@ -28,3 +28,4 @@ urlpatterns = [
     path('api/get_latest_posts', views.api_get_latest_posts),
     path('api/get_previous_posts', views.api_get_previous_posts),
 ]
+
