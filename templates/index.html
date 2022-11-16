@@ -4,7 +4,7 @@
 
 {% get_current_timezone as TIME_ZONE %}
 {% block headbar %}
-{{ request.user.shown_name }} (<a href="/user/{{ request.user.username}}">My timeline</a>) - <a href="/user/config">Configs</a> - <a href="/account/logout">Log out</a>
+{{ request.user.shown_name }} (<a href="/user/{{ request.user.username}}">My timeline</a>) - <a href="/account/config">Configs</a> - <a href="/account/logout">Log out</a>
 {% endblock %}
 
 {% block content %}
@@ -27,7 +27,7 @@
       <option value="private">Private</option>
     </select> 
 
-     <button id="submit_post"  type="button" class="btn">Post!</button>
+    <button id="submit_post"  type="button" class="btn">Post!</button>
   </form>
 
   <div id="public_timeline">

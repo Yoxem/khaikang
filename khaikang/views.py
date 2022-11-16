@@ -10,6 +10,10 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.core import serializers
 from django.db.models import Q
+import string
+import random
+from django import forms
+
 
 def api_get_previous_posts(request):
     if request.method == 'POST':
@@ -77,6 +81,14 @@ def api_post(request):
         return HttpResponse(200, str(post_text))
 
 def signup(request):
+    small_letters_a_to_z = string.ascii_letters
+    honeypot_name_length = random.choice(range(14,18))
+    honeypot_name = ("").join([random.choice(small_letters_a_to_z) for letter in range(honeypot_name_length)])
+    
+    try:
+        request.session['hnyp_name'] = request.session['hnyp_name']
+    except KeyError:
+        request.session['hnyp_name'] = honeypot_name
 
     class KhaikangUserCreationForm(UserCreationForm):
         def save(self, commit=True):
@@ -88,12 +100,18 @@ def signup(request):
 
         class Meta(UserCreationForm.Meta):
             model = User
-            fields = UserCreationForm.Meta.fields + ('email',)
+
+            fields = UserCreationForm.Meta.fields + ('email', )
 
     form = KhaikangUserCreationForm()
+    honeypot_name = request.session['hnyp_name']
 
     if request.method == "POST":
         form = KhaikangUserCreationForm(request.POST)
+
+        if request.POST.get(honeypot_name) != "":
+            return HttpResponse(200, "")
+
         if form.is_valid():
             form.fields['shown_name'] = form.fields['username']
             print(form.fields['shown_name'])
@@ -106,6 +124,34 @@ def signup(request):
     form = KhaikangUserCreationForm()
     
     template = loader.get_template('signup.html')
+    return HttpResponse(template.render({'form': form, 'honeypot_name': honeypot_name}, request))
+
+def user_config(request):
+    class UserConfigForm(forms.ModelForm):
+        class Meta:
+            model = User
+            fields = ('shown_name', 'avatar', 'desc',  'email')
+        
+    
+    current_user = User.objects.get(id=request.user.id)
+
+    if request.method == "POST":
+        form = UserConfigForm(request.POST,request.FILES, instance=current_user)
+
+
+
+        if form.is_valid():
+            form.save()
+
+
+        else:
+            pass
+
+    form = UserConfigForm(initial={'shown_name': request.user.shown_name,
+                                    'desc' : request.user.desc,
+                                    'url' : request.user.url,
+                                    'email' : request.user.email})
+    template = loader.get_template('user_config.html')
     return HttpResponse(template.render({'form': form}, request))
 
 def home(request):

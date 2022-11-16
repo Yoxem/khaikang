@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 tmp/restart.txt
 .htaccess
+
+# Django
+migrations/
+media/img/

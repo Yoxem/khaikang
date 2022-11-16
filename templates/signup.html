@@ -5,6 +5,13 @@
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    Leave it blank: <input id ="{{ honeypot_name }}" type="text" name="{{ honeypot_name }}"><br>
     <button type="submit">Sign up</button>
   </form>
+
+  <script type="text/javascript">
+    $ = (x) => document.getElementById(x);
+
+    $("{{ honeypot_name }}").style.display = 'none';
+    </script>
 {% endblock %}

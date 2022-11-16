@@ -134,3 +134,9 @@ AUTH_USER_MODEL = 'khaikang.User'
 
 # timezone
 USE_TZ = True
+
+# Media files  
+MEDIA_URL = '/media/'  
+
+# media_storing path
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')  

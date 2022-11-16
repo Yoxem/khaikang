@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
+import hashlib
+
+
 
 class User(AbstractUser):
     """customized user field."""
@@ -13,6 +16,12 @@ class User(AbstractUser):
 
     url = models.URLField(max_length=200) # max to 200 char
 
+    def upload_path(instance, orig_filename):
+            
+            avatar_filename = hashlib.sha256(orig_filename.encode('utf-8')).hexdigest()[:10]
+            return f"img/profile/user_{instance.id}/{avatar_filename}"
+
+    avatar = models.ImageField(upload_to=upload_path)
 
     desc = models.TextField() # description
 
