@@ -37,11 +37,11 @@
     <div id="new_post_notifier" value=""></div>
     <div id="latest_time" style="display: block;">{{latest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
 
-    {% for post in public_timeline_list %}
+    {% for post in viewed_timeline_list %}
 
-  <div id="post-{{post.id}}" class="post"><a href="/user/{{post.poster}}">{{public_post.poster.shown_name}}</a>
-    at <a href="/post/{{post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
-    {{public_post.text|linebreaksbr}}<br/>
+  <div id="post-{{post.id}}" class="post"><a href="/user/{{post.poster}}">{{post.poster.shown_name}}</a>
+    at <a href="/post/{{post.id}}" class="post-time">{{post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
+    {{post.text|linebreaksbr}}<br/>
     <span id="reply-{{post.id}}" value="{{post.id}}" class="reply">↩️</span>
     - <span id="repost-{{post.id}}" value="{{post.id}}" class="repost">🔁</span> 
     - <span id="fav-{{post.id}}" value="{{post.id}}" class="fav">⭐</span>

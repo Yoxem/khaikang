@@ -237,7 +237,7 @@ def user_timeline(request, username):
         'user_shown_name' : viewed_user.shown_name,
         'latest_received_time' : latest_received_time,
         'oldest_received_time' : oldest_received_time,
-        'public_timeline_list': viewed_timeline_list,
+        'viewed_timeline_list': viewed_timeline_list,
     }
     return HttpResponse(template.render(context, request))
 
