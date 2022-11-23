@@ -17,8 +17,13 @@ x => timezoneChangingOne(x)
 
 
 
+
 $name = (x) => document.getElementsByName(x);
 $ = (x) => document.getElementById(x);
+
+csrf_token = $("_token").content;
+
+
 var httpRequest;
 $("submit_post").addEventListener('click', make_req);
 
@@ -27,12 +32,14 @@ async function make_req() {
 post_text = $('post_text').value;
 post_privilage = $('privil_choosing').value;
 
+
+
 if (post_text != ""){
 
 await fetch('/api/post', {
 method: 'POST',
 headers: {
-"X-CSRFToken": "{{ csrf_token }}",
+"X-CSRFToken": csrf_token,
 'Content-Type': 'application/json',
 },
 body: JSON.stringify({
@@ -71,7 +78,7 @@ latest_time_string = $("latest_time").innerHTML;
 await fetch('/api/get_recent_posts_counter', {
 method: 'POST',
 headers: {
-"X-CSRFToken": "{{ csrf_token }}",
+"X-CSRFToken": csrf_token,
 'Content-Type': 'application/json',
 },
 body: JSON.stringify({
@@ -105,7 +112,7 @@ oldest_time_string = $("oldest_time").innerHTML;
 await fetch('/api/get_previous_posts', {
 method: 'POST',
 headers: {
-"X-CSRFToken": "{{ csrf_token }}",
+"X-CSRFToken": csrf_token,
 'Content-Type': 'application/json',
 },
 body: JSON.stringify({
@@ -126,7 +133,7 @@ latest_time_string = $("latest_time").innerHTML;
 await fetch('/api/get_latest_posts', {
 method: 'POST',
 headers: {
-"X-CSRFToken": "{{ csrf_token }}",
+"X-CSRFToken": csrf_token,
 'Content-Type': 'application/json',
 },
 body: JSON.stringify({

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (1:1.2.1+202210291244+9c6d41e410)"
+   sodipodi:docname="default_logo.svg"
+   inkscape:export-filename="media/default_logo.png"
+   inkscape:export-xdpi="114.81297"
+   inkscape:export-ydpi="114.81297"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="0.921875"
+     inkscape:cx="390.50847"
+     inkscape:cy="293.42373"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient352">
+      <stop
+         style="stop-color:#1b9200;stop-opacity:1;"
+         offset="0"
+         id="stop348" />
+      <stop
+         style="stop-color:#007afe;stop-opacity:1;"
+         offset="1"
+         id="stop350" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient352"
+       id="linearGradient354"
+       x1="0.14300847"
+       y1="133.74536"
+       x2="512.77649"
+       y2="325.92068"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(3.188427,3.8227623)" />
+  </defs>
+  <g
+     inkscape:label="圖層 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:url(#linearGradient354);fill-opacity:1;stroke-width:9.8"
+       id="rect286"
+       width="512"
+       height="512"
+       x="0"
+       y="0" />
+    <g
+       id="g1268"
+       transform="translate(0.14876459,1.2657939)">
+      <g
+         id="g1215"
+         transform="matrix(1.1490599,0,0,1.1490599,-37.374838,1.0563917)"
+         style="stroke-width:0.870277">
+        <circle
+           style="fill:#f9f9f9;stroke-width:8.52872"
+           id="path997"
+           cx="256"
+           cy="137.12709"
+           r="90.975639" />
+        <path
+           id="path1211"
+           style="fill:#f9f9f9;stroke-width:8.52872"
+           d="M 422.30759,442.08789 H 89.692413 c 0,0 74.458447,-218.16893 166.307587,-218.16893 91.84915,0 166.30759,218.16893 166.30759,218.16893 z"
+           sodipodi:nodetypes="ccsc" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,10 +1,19 @@
 {% extends "base_generic.html" %}
+{% load static %}
+
 
 {% block content %}
 <form method="post" enctype="multipart/form-data">
 {% csrf_token %}
-{{ form.as_p }}
+<p>{{ form.shown_name.label}}: {{ form.shown_name}}</p>
+<p> Avatar Preview: <div class="avatar-preview"><img id="avatar-img" src="{{avatar.url}}");></div></p>
+<p>{{ form.avatar.label}}: {{ form.avatar}}</p>
+<p>{{ form.desc.label}}: {{ form.desc}}</p>
+<p>{{ form.email.label}}: {{ form.email}}</p>
 <button type="submit">Refresh</button>
 
 </form>
+
+<script type="text/javascript" src="{% static 'user_config.js'%}">
+</script>
 {% endblock %}

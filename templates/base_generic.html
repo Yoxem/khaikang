@@ -1,8 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  {% block meta%}
+  {% endblock %}
 	<meta charset="utf-8">
-  {% block title %}<title>Local Library</title>{% endblock %}
+  {% block title %}<title>Local Library</title>
+  <link type="text/css" rel="stylesheet"  href="{% static 'generic.css' %}"></style>
+  {% endblock %}
 </head>
   <body>
 	

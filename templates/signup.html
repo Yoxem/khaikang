@@ -5,13 +5,13 @@
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    Leave it blank: <input id ="{{ honeypot_name }}" type="text" name="{{ honeypot_name }}"><br>
+    <span id="{{ honeypot_name }}-some-desc">Leave it blank: </span><input id ="{{ honeypot_name }}" type="text" name="{{ honeypot_name }}"><br>
     <button type="submit">Sign up</button>
   </form>
 
   <script type="text/javascript">
     $ = (x) => document.getElementById(x);
-
+    $("{{ honeypot_name }}-some-desc").style.display = 'none';
     $("{{ honeypot_name }}").style.display = 'none';
     </script>
 {% endblock %}

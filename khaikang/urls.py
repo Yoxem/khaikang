@@ -19,6 +19,7 @@ from django.urls import include
 from . import views
 from . import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('api/get_recent_posts_counter', views.api_get_recent_posts_counter),
     path('api/get_latest_posts', views.api_get_latest_posts),
     path('api/get_previous_posts', views.api_get_previous_posts),
+    path('user/<username>', views.user_timeline),
 ]
 
 if settings.DEBUG:  

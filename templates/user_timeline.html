@@ -32,19 +32,19 @@
 
     <button id="submit_post"  type="button" class="btn">Post!</button>
   </form>
-
+<div id="intro">{{user_shown_name}}<br>{{username}}</div>
   <div id="public_timeline">
     <div id="new_post_notifier" value=""></div>
     <div id="latest_time" style="display: block;">{{latest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
 
-    {% for public_post in public_timeline_list %}
+    {% for post in public_timeline_list %}
 
-  <div id="post-{{public_post.id}}" class="post"><a href="/user/{{public_post.poster}}">{{public_post.poster.shown_name}}</a>
-    at <a href="/post/{{public_post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
+  <div id="post-{{post.id}}" class="post"><a href="/user/{{post.poster}}">{{public_post.poster.shown_name}}</a>
+    at <a href="/post/{{post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
     {{public_post.text|linebreaksbr}}<br/>
-    <span id="reply-{{public_post.id}}" value="{{public_post.id}}" class="reply">↩️</span>
-    - <span id="repost-{{public_post.id}}" value="{{public_post.id}}" class="repost">🔁</span> 
-    - <span id="fav-{{public_post.id}}" value="{{public_post.id}}" class="fav">⭐</span>
+    <span id="reply-{{post.id}}" value="{{post.id}}" class="reply">↩️</span>
+    - <span id="repost-{{post.id}}" value="{{post.id}}" class="repost">🔁</span> 
+    - <span id="fav-{{post.id}}" value="{{post.id}}" class="fav">⭐</span>
 </div>
   {% endfor %}
   <div id="previous_post_loader">More posts</div>
@@ -52,7 +52,8 @@
 
   </div>
 
-
+<pre> % static 'timeline.js' 要修改
+    </pre>
   <script type="text/javascript" src="{% static 'timeline.js' %}">
 
 

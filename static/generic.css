@@ -1,0 +1,9 @@
+div.avatar-preview{
+
+}
+
+#avatar-img{
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}

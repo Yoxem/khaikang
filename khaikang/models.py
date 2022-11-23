@@ -6,6 +6,8 @@ import hashlib
 
 
 
+
+
 class User(AbstractUser):
     """customized user field."""
     username = models.CharField(max_length=30, unique=True) # max to 30 char
@@ -19,7 +21,7 @@ class User(AbstractUser):
     def upload_path(instance, orig_filename):
             
             avatar_filename = hashlib.sha256(orig_filename.encode('utf-8')).hexdigest()[:10]
-            return f"img/profile/user_{instance.id}/{avatar_filename}"
+            return f"img/profile/user_{instance.id}/{orig_filename}"
 
     avatar = models.ImageField(upload_to=upload_path)
 
