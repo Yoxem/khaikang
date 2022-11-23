@@ -226,7 +226,7 @@ def user_timeline(request, username):
     
     latest_received_time = timezone.now()
     if len(viewed_timeline_list) > 0:
-        oldest_received_time = viewed_timeline_list[-1].post_time
+        oldest_received_time = list(viewed_timeline_list)[-1].post_time
     else:
         oldest_received_time = datetime.strptime("1970/01/01 00:00", "%Y/%m/%d %H:%M")
     
@@ -251,7 +251,7 @@ def home(request):
     latest_received_time = timezone.now()
 
     if len(public_timeline_list) > 0:
-        oldest_received_time = public_timeline_list[-1].post_time
+        oldest_received_time = list(public_timeline_list)[-1].post_time
     else:
         oldest_received_time = datetime.strptime("1970/01/01 00:00", "%Y/%m/%d %H:%M")
     
