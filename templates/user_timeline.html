@@ -11,28 +11,18 @@
 {% endblock %}
 
 {% block content %}
-<form method="POST" id="posting-form">
-    {% csrf_token %}
-    <div class="posting-form-group">
-      <label>Post</label>
+<div id="intro"><div id="intro-shown-name">{{user_shown_name}}</div><div id="intro-id-name">{{username}}</div>
+{% if username == request.user.username %}
+My account<br>
+{% endif %}
+{% if username != request.user.username %}
+{% if following_status == "unfollowed" %}<button value="send-following-request" id="follow-user-button">Follow</button><br>{% endif %}
+{% if following_status == "undecided" %}<button value="cancel-following-request" id="follow-user-button">Cancel Following Request</button><br>{% endif %}
+{% if following_status == "yes" %}<button value="unfollow" id="follow-user-button">Unfollow</button><br>{% endif %}
 
-      <textarea id="post_text" name="post_text" placeholder="What do you want to post?"
-      maxlength="500" style="resize: none;"  oninput="auto_expand(this)"></textarea>
-    </div>
+{% endif %}
+Following: <span class="fo-number">{{user_following_number}}</span> Follower: <span class="fo-number">{{user_follower_number}}</span></div>
 
-    {% csrf_token %} 
-
-    <label for="privilege">Privileges:</label>
-
-    <select name="privilege" id="privil_choosing">
-      <option value="public" selected>Public Timeline</option>
-      <option value="unpublic">Not in Public Timeline</option>
-      <option value="private">Private</option>
-    </select> 
-
-    <button id="submit_post"  type="button" class="btn">Post!</button>
-  </form>
-<div id="intro">{{user_shown_name}}<br>{{username}}</div>
   <div id="public_timeline">
     <div id="new_post_notifier" value=""></div>
     <div id="latest_time" style="display: block;">{{latest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
@@ -52,8 +42,7 @@
 
   </div>
 
-<pre> % static 'timeline.js' 要修改
-    </pre>
+
   <script type="text/javascript" src="{% static 'timeline.js' %}">
 
 

@@ -1,5 +1,5 @@
 import json
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.template import loader
 from .models import User, Post, Following
 from django.utils import timezone
@@ -24,7 +24,19 @@ def api_get_previous_posts(request):
         post_body_json = json.loads(post_body_orig)
         oldest_time = post_body_json["oldest_time"]
         oldest_datetime_object = datetime.strptime(oldest_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        older_posts = Post.objects.filter(post_time__lt=oldest_datetime_object).order_by('-id')[:20]
+
+        note = post_body_json["request_note"]
+        if note["type"] == "home":
+            all_i_follow = Following.objects.filter(follower=request.user.id).filter(isapproved="yes")
+            all_i_follow_and_me = User.objects.filter(Q(id__in = all_i_follow) | Q(id=request.user.id))
+
+            older_posts = Post.objects.filter(post_time__lt=oldest_datetime_object).filter(poster__in = all_i_follow_and_me).order_by('-id')[:20]
+        elif note["type"] == "user":
+            username = note["arg"]
+            poster = User.objects.get(username=username)
+            older_posts = Post.objects.filter(post_time__lt=oldest_datetime_object).filter(poster=poster).order_by('-id')[:20]
+        else:
+            pass
         older_posts_list = [{"id" : o.pk, 
                     "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
                     "poster_username" : o.poster.username,
@@ -37,6 +49,8 @@ def api_get_previous_posts(request):
             oldest_time = oldest_time
         return JsonResponse({'older_posts':older_posts_list,      
                             'oldest_time': oldest_time})
+    else:
+        return HttpResponseNotAllowed('POST')
 
 
 
@@ -46,7 +60,18 @@ def api_get_latest_posts(request):
         post_body_json = json.loads(post_body_orig)
         latest_time = post_body_json["latest_time"]
         latest_datetime_object = datetime.strptime(latest_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        newer_posts = Post.objects.filter(post_time__gte=latest_datetime_object)
+
+        note = post_body_json["request_note"]
+        if note["type"] == "home":
+            all_i_follow = Following.objects.filter(follower=request.user.id).filter(isapproved="yes")
+            all_i_follow_and_me = User.objects.filter(Q(id__in = all_i_follow) | Q(id=request.user.id))
+
+            newer_posts = Post.objects.filter(post_time__gt=latest_datetime_object).filter(poster__in = all_i_follow_and_me).order_by('-id')[:20]
+        elif note["type"] == "user":
+            username = note["arg"]
+            poster = User.objects.get(username=username)
+            newer_posts = Post.objects.filter(post_time__gt=latest_datetime_object).filter(poster=poster).order_by('-id')[:20]
+
         newer_posts_list = [{"id" : o.pk, 
                             "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
                             "poster_username" : o.poster.username,
@@ -54,6 +79,8 @@ def api_get_latest_posts(request):
                             "text": o.text}
                             for o in newer_posts]
         return JsonResponse({'newer_posts':newer_posts_list})
+    else:
+        return HttpResponseNotAllowed('POST')
 
 def api_get_recent_posts_counter(request):
     if request.method == 'POST':
@@ -61,8 +88,28 @@ def api_get_recent_posts_counter(request):
         post_body_json = json.loads(post_body_orig)
         latest_time = post_body_json["latest_time"]
         latest_datetime_object = datetime.strptime(latest_time, '%Y-%m-%d %H:%M:%S.%f%z')
-        newer_posts_len = Post.objects.filter(post_time__gte=latest_datetime_object).exclude(Q(poster=request.user) & Q(post_time=latest_datetime_object)).__len__()
+
+        note = post_body_json["request_note"]
+        if note["type"] == "home":
+            all_i_follow = Following.objects.filter(follower=request.user.id).filter(isapproved="yes")
+            all_i_follow_and_me = User.objects.filter(Q(id__in = all_i_follow) | Q(id=request.user.id))
+
+            newer_posts_len = Post.objects.filter(post_time__gte=latest_datetime_object) \
+                                        .filter(poster__in = all_i_follow_and_me) \
+                                        .exclude(Q(poster=request.user) & Q(post_time=latest_datetime_object)) \
+                                        .__len__()
+        elif note["type"] == "user":
+            username = note["arg"]
+            poster = User.objects.get(username=username)
+            newer_posts_len = Post.objects.filter(post_time__gte=latest_datetime_object) \
+                                        .filter(poster=poster) \
+                                        .exclude(Q(post_time=latest_datetime_object)) \
+                                        .__len__()
+
+        
         return JsonResponse({'newer_posts_num':newer_posts_len})
+    else:
+        return HttpResponseNotAllowed('POST')
 
 
 
@@ -82,6 +129,8 @@ def api_post(request):
         post_time = timezone.now())
         a_post.save()
         return HttpResponse(200, str(post_text))
+    else:
+        return HttpResponseNotAllowed('POST')
 
 def signup(request):
     small_letters_a_to_z = string.ascii_letters
@@ -170,8 +219,9 @@ def user_config(request):
         class Meta:
             
             model = User
-            fields = ('shown_name', 'avatar', 'desc',   'email')
-        
+            fields = ('shown_name', 'desc', 'avatar',  'email')
+            
+        avatar = forms.ImageField(required = False)
 
 
     if request.user == AnonymousUser():
@@ -186,9 +236,13 @@ def user_config(request):
         
 
         if form.is_valid():
-            print(old_image_path)
+            image_path = os.path.abspath(f"./media/{current_user.avatar.name}") 
+            try:
+                avatar_path_in_form = form.cleaned_data['avatar'].path
+            except AttributeError:
+                avatar_path_in_form = form.cleaned_data['avatar']
             
-            if os.path.exists(old_image_path) and (old_image_path != os.path.abspath("./media/static/default_avatar.png")):
+            if avatar_path_in_form != old_image_path and is_custom_avatar_path(old_image_path):
                 a = os.remove(old_image_path)
                 print(a)
             
@@ -209,14 +263,54 @@ def user_config(request):
             pass
 
     current_user = User.objects.get(id=request.user.id)
-    form = UserConfigForm(initial={'shown_name': request.user.shown_name,
-                                    'desc' : request.user.desc,
-                                    'url' : request.user.url,
-                                    'email' : request.user.email})
+    form = UserConfigForm(initial={'shown_name': current_user.shown_name,
+                                    'desc' : current_user.desc,
+                                    'url' : current_user.url,
+                                    'email' : current_user.email})
     template = loader.get_template('user_config.html')
     return HttpResponse(template.render({'form': form, 'avatar': current_user.avatar}, request))
 
+def is_custom_avatar_path(old_image_path):
+    return os.path.exists(old_image_path) and (old_image_path != os.path.abspath("./media/static/default_avatar.png"))
+
+def follow_request(request, request_value, dest_username):
+    if request.method != "POST":
+        return HttpResponseNotAllowed('POST')
+    else:
+        current_user = User.objects.get(id=request.user.id)
+        dest_user = User.objects.get(username=dest_username)
+        
+        if request_value == "send-following-request":
+            following_status = Following(follower=current_user, followee= dest_user, isapproved="undecided")
+            following_status.save()
+            return JsonResponse({'status': "request sent"})
+        elif request_value == "cancel-following-request":
+            following_status = Following.objects.get(follower=current_user.id, followee= dest_user.id)
+            following_status.delete()
+            return JsonResponse({'status': "request cancelled"})
+        elif request_value == "unfollow":
+            following_status = Following.objects.get(follower=current_user.id, followee= dest_user.id)
+            following_status.delete()
+            return JsonResponse({'status': "unfollowed"})
+        else:
+            return JsonResponse({'status': "other"})
+
+
+
 def user_timeline(request, username):
+    user_id = User.objects.get(username=username).id
+
+    user_following_number = Following.objects.filter(follower=user_id).filter(isapproved="yes").__len__()
+    user_follower_number = Following.objects.filter(followee=user_id).filter(isapproved="yes").__len__()
+
+
+    following_relationship  = Following.objects.filter(follower=request.user.id).filter(followee=user_id)
+    following_status = ""
+    if following_relationship.__len__() == 0:
+        following_status = "unfollowed"
+    else:
+        following_status = following_relationship[0].isapproved
+    
 
     viewed_user = User.objects.get(username=username)
     if Following.objects.filter(follower = request.user.id).filter(followee=viewed_user.id) or request.user.id == viewed_user.id:
@@ -235,6 +329,9 @@ def user_timeline(request, username):
     context = {
         'username' : username,
         'user_shown_name' : viewed_user.shown_name,
+        'following_status': following_status,
+        'user_following_number' : user_following_number,
+        'user_follower_number': user_follower_number,
         'latest_received_time' : latest_received_time,
         'oldest_received_time' : oldest_received_time,
         'viewed_timeline_list': viewed_timeline_list,
@@ -245,9 +342,11 @@ def home(request):
 
     if request.user == AnonymousUser():
         return redirect('/account/login')   # redirect to main page
-    
-    public_timeline_list = Post.objects.filter(privilage = 'public').order_by('-id')[:20]
-    
+
+    all_i_follow = Following.objects.filter(follower=request.user.id).filter(isapproved="yes")
+    all_i_follow_and_me = User.objects.filter(Q(id__in = all_i_follow) | Q(id=request.user.id))
+    public_timeline_list = Post.objects.filter(poster__in = all_i_follow_and_me).order_by('-id')[:20]
+        
     latest_received_time = timezone.now()
 
     if len(public_timeline_list) > 0:

@@ -52,6 +52,15 @@ class User(AbstractUser):
 class Following(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
     followee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followee")
+    IS_DECIDED = [
+    ('undecided', 'undecided'),
+    ('yes', 'yes'),
+    ]
+    isapproved = models.CharField(
+        max_length=9,
+        choices=IS_DECIDED,
+        default='undecided',
+    )
 
 
 class Post(models.Model):

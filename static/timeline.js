@@ -15,6 +15,15 @@ x => timezoneChangingOne(x)
     );
 }
 
+var requestNote = {"type" : "home", "arg" : ""};
+var pathName = window.location.pathname;
+var homePattern = /[/]home[/]/;
+var userPagePattern = /[/]user[/]([^/]+)/;
+var userIdName = "";
+if (pathName.match(userPagePattern)){
+    userIdName = pathName.match(userPagePattern)[1];
+    requestNote = {"type" : "user", "arg" : userIdName};
+}
 
 
 
@@ -25,7 +34,8 @@ csrf_token = $("_token").content;
 
 
 var httpRequest;
-$("submit_post").addEventListener('click', make_req);
+
+
 
 async function make_req() {
 
@@ -44,7 +54,8 @@ headers: {
 },
 body: JSON.stringify({
 "privilage" : post_privilage,
-"text": post_text,
+"text" : post_text,
+"request_note" : requestNote,
 })
 
 }).then(response => {if (response.ok == true)
@@ -83,10 +94,11 @@ headers: {
 },
 body: JSON.stringify({
 "latest_time" : latest_time_string,
+"request_note" : requestNote,
 })
 
 }).then(response => response.json())
-.then(the_json => {console.log(the_json);let newer_posts_num = the_json['newer_posts_num'];
+.then(the_json => {let newer_posts_num = the_json['newer_posts_num'];
 if (newer_posts_num == 1)
 {   $("new_post_notifier").style.display = "block";
 $("new_post_notifier").innerHTML = `1 new post`}
@@ -117,6 +129,8 @@ headers: {
 },
 body: JSON.stringify({
 "oldest_time" : oldest_time_string,
+"request_note" : requestNote,
+
 }) }).then(response => response.json())
 .then(item => {new_oldest_time_raw = item['oldest_time'];
         new_oldest_time =  new_oldest_time_raw.substring(0,10) + " " + new_oldest_time_raw.substring(11,26) + "+0000";
@@ -128,6 +142,31 @@ body: JSON.stringify({
 }
 
 
+async function make_follow_req(){
+    requestValue = $("follow-user-button").value;
+    await fetch(`/api/follow_request/${requestValue}/${userIdName}`, {
+        method: 'POST',
+        headers: {
+        "X-CSRFToken": csrf_token,
+        'Content-Type': 'application/json',
+        },
+        body : ""
+    }).then(response => response.json())
+    .then(
+        item =>{
+            returnValue = item["status"];
+            if (returnValue == "request sent"){
+                $("follow-user-button").value = "cancel-following-request";
+                $("follow-user-button").innerHTML = "Cancel Following Request";
+            }
+            else if(returnValue == "request cancelled" || returnValue == "unfollowed"){
+                $("follow-user-button").value = "send-following-request";
+                $("follow-user-button").innerHTML = "Follow";
+            }
+        }
+    )
+}
+
 async function getLatestPosts(){
 latest_time_string = $("latest_time").innerHTML;
 await fetch('/api/get_latest_posts', {
@@ -138,7 +177,9 @@ headers: {
 },
 body: JSON.stringify({
 "latest_time" : latest_time_string,
-}) }).then(response => response.json())
+"request_note" : requestNote,
+}) })
+.then(response => response.json())
 .then(item => item['newer_posts'])
 .then(posts => {posts.forEach(post => addPostToTheBeginning(post));
 $('new_post_notifier').style.display = "none";
@@ -153,7 +194,6 @@ var new_div = document.createElement("div");
 new_div.id =  `post-${post.id}`;
 new_div.className = "post";
 post_text_replaced = post.text.replace(/(\r\n|\n\r|\r|\n)/g, "<br>" );
-console.log(post_text_replaced);
 new_div.innerHTML = `<a href="/user/${post.poster_username}">${post.poster_shown_name}</a>
 at <a href="/post/${post.id}" class="post-time">${post.post_time}</a><br>
 ${post_text_replaced}<br>
@@ -181,5 +221,10 @@ $("new_post_notifier").addEventListener('click', getLatestPosts);
 $("previous_post_loader").addEventListener('click', getPreviousPosts);
 
 
-
-adjust_post_text();
+if (requestNote["type"] == "home"){
+    $("submit_post").addEventListener('click', make_req);
+    adjust_post_text();
+}
+if (requestNote["type"] == "user"){
+    $("follow-user-button").addEventListener('click', make_follow_req);
+}

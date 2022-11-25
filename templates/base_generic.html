@@ -5,13 +5,13 @@
   {% block meta%}
   {% endblock %}
 	<meta charset="utf-8">
-  {% block title %}<title>Local Library</title>
+  {% block title %}<title>Khaikang</title>
   <link type="text/css" rel="stylesheet"  href="{% static 'generic.css' %}"></style>
   {% endblock %}
 </head>
   <body>
 	
-	<h1 id="title">{%block title}Kianting.social{%endblock title}</h1>
+	<h1 id="title">{%block maintitle %}Kianting.social{% endblock %}</h1>
 	<div id="headbar">{% block headbar %}{% endblock headbar%}</div>
   <div id="sidebar">{% block sidebar %}<!-- insert default navigation text for every page -->{% endblock %}</div>
   <div id="content">{% block content %}<!-- default content text (typically empty) -->{% endblock %}</div>

@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/get_latest_posts', views.api_get_latest_posts),
     path('api/get_previous_posts', views.api_get_previous_posts),
     path('user/<username>', views.user_timeline),
+    path('api/follow_request/<request_value>/<dest_username>', views.follow_request)
 ]
 
 if settings.DEBUG:  

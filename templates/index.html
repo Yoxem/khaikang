@@ -14,7 +14,6 @@
 <form method="POST" id="posting-form">
     {% csrf_token %}
     <div class="posting-form-group">
-      <label>Post</label>
 
       <textarea id="post_text" name="post_text" placeholder="What do you want to post?"
       maxlength="500" style="resize: none;"  oninput="auto_expand(this)"></textarea>
@@ -30,7 +29,7 @@
       <option value="private">Private</option>
     </select> 
 
-    <button id="submit_post"  type="button" class="btn">Post!</button>
+    <button id="submit_post"  type="button" class="btn">Kóng!</button>
   </form>
 
   <div id="public_timeline">
