@@ -63,6 +63,8 @@ class Following(models.Model):
     )
 
 
+
+
 class Post(models.Model):
     text = models.TextField()
     poster = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -79,5 +81,26 @@ class Post(models.Model):
         choices=GROUP_PRIVILAGES,
         default='public',
     )
+
+
+
+class Repost(models.Model):
+    reposter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reposter")
+    reposted_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reposted_post")
+    repost_time = models.DateTimeField(default=timezone.now())
+    is_read = models.BooleanField(default=False)
+
+class Reply(models.Model):
+    replyer_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="replyer_post")
+    replyee_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="replyee_post")
+    is_read = models.BooleanField(default=False)
+
+class Fav(models.Model):
+    favouriter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favouriter")
+    favourited_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="favourited_post")
+    favourited_time = models.DateTimeField(default=timezone.now())
+    is_read = models.BooleanField(default=False)
+
+
 
 

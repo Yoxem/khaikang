@@ -1,7 +1,7 @@
 import json
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.template import loader
-from .models import User, Post, Following
+from .models import User, Post, Following, Fav, Repost
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
@@ -37,12 +37,21 @@ def api_get_previous_posts(request):
             older_posts = Post.objects.filter(post_time__lt=oldest_datetime_object).filter(poster=poster).order_by('-id')[:20]
         else:
             pass
-        older_posts_list = [{"id" : o.pk, 
-                    "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
-                    "poster_username" : o.poster.username,
-                    "poster_shown_name":o.poster.shown_name ,
-                    "text": o.text}
-                    for o in older_posts]
+
+        is_faved = [Fav.objects.filter(favourited_post=p).filter(favouriter=request.user).__len__() for p in older_posts]
+        is_reposted = [Repost.objects.filter(reposted_post=p).filter(reposter=request.user).__len__() for p in older_posts]
+        older_posts_info = zip(older_posts, is_faved, is_reposted)
+
+        older_posts_list = [{"id" : o[0].pk, 
+                    "post_time" :  datetime.strftime(o[0].post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
+                    "poster_avatar" : o[0].poster.avatar.url,
+                    "poster_username" : o[0].poster.username,
+                    "poster_shown_name":o[0].poster.shown_name ,
+                    "text": o[0].text,
+                    "is_faved" : o[1],
+                    "is_reposted" : o[2],
+                    }
+                    for o in older_posts_info]
         if len(list(older_posts)) > 0:
             oldest_time = datetime.strftime(list(older_posts)[-1].post_time, "%Y-%m-%d %H:%M:%S.%f%z")
         else:
@@ -72,12 +81,20 @@ def api_get_latest_posts(request):
             poster = User.objects.get(username=username)
             newer_posts = Post.objects.filter(post_time__gt=latest_datetime_object).filter(poster=poster).order_by('-id')[:20]
 
-        newer_posts_list = [{"id" : o.pk, 
-                            "post_time" :  datetime.strftime(o.post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
-                            "poster_username" : o.poster.username,
-                            "poster_shown_name":o.poster.shown_name ,
-                            "text": o.text}
-                            for o in newer_posts]
+        is_faved = [Fav.objects.filter(favourited_post=p).filter(favouriter=request.user).__len__() for p in newer_posts]
+        is_reposted = [Repost.objects.filter(reposted_post=p).filter(reposter=request.user).__len__() for p in newer_posts]
+        newer_posts_infp = zip(newer_posts, is_faved, is_reposted)
+
+        newer_posts_list = [{"id" : o[0].pk, 
+                            "post_time" :  datetime.strftime(o[0].post_time, "%Y-%m-%d %H:%M:%S.%f%z"),
+                            "poster_avatar" : o[0].poster.avatar.url,
+                            "poster_username" : o[0].poster.username,
+                            "poster_shown_name":o[0].poster.shown_name ,
+                            "text": o[0].text,
+                            "is_faved" : o[1],
+                            "is_reposted" : o[2],
+                            }
+                            for o in newer_posts_infp]
         return JsonResponse({'newer_posts':newer_posts_list})
     else:
         return HttpResponseNotAllowed('POST')
@@ -273,7 +290,39 @@ def user_config(request):
 def is_custom_avatar_path(old_image_path):
     return os.path.exists(old_image_path) and (old_image_path != os.path.abspath("./media/static/default_avatar.png"))
 
-def follow_request(request, request_value, dest_username):
+def api_fav_request(request, post_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed('POST')
+    current_user = User.objects.get(id=request.user.id)
+    post = Post.objects.get(id=post_id)
+
+    if Fav.objects.filter(favouriter = current_user, favourited_post=post).__len__() > 0:
+        existed_fav = Fav.objects.filter(favouriter = current_user, favourited_post=post)[0]
+        existed_fav.delete()
+        return JsonResponse({'status': "deleted"})
+    else:
+        added_fav = Fav(favouriter = current_user, favourited_post=post)
+        added_fav.save()
+        return JsonResponse({'status': "faved"})
+
+def api_repost_request(request, post_id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed('POST')
+    current_user = User.objects.get(id=request.user.id)
+    post = Post.objects.get(id=post_id)
+
+    if Repost.objects.filter(reposter = current_user, reposted_post=post).__len__() > 0:
+        existed_repost = Repost.objects.filter(reposter = current_user, reposted_post=post)[0]
+        existed_repost.delete()
+        return JsonResponse({'status': "deleted"})
+    else:
+        added_repost = Repost(reposter = current_user, reposted_post=post)
+        added_repost.save()
+        return JsonResponse({'status': "reposted"})
+    
+
+
+def api_follow_request(request, request_value, dest_username):
     if request.method != "POST":
         return HttpResponseNotAllowed('POST')
     else:
@@ -317,6 +366,10 @@ def user_timeline(request, username):
         viewed_timeline_list = Post.objects.filter(poster = viewed_user.id).order_by('-id')[:20]
     else:
         viewed_timeline_list = Post.objects.filter(poster = viewed_user.id).filter(privilage = 'public').order_by('-id')[:20]
+
+    is_faved = [Fav.objects.filter(favourited_post=p).filter(favouriter=request.user).__len__() for p in viewed_timeline_list]
+    is_reposted = [Repost.objects.filter(reposted_post=p).filter(reposter=request.user).__len__() for p in viewed_timeline_list]
+    viewed_timeline_info = zip(viewed_timeline_list, is_faved, is_reposted)
     
     latest_received_time = timezone.now()
     if len(viewed_timeline_list) > 0:
@@ -334,7 +387,7 @@ def user_timeline(request, username):
         'user_follower_number': user_follower_number,
         'latest_received_time' : latest_received_time,
         'oldest_received_time' : oldest_received_time,
-        'viewed_timeline_list': viewed_timeline_list,
+        'viewed_timeline_info': viewed_timeline_info,
     }
     return HttpResponse(template.render(context, request))
 
@@ -346,6 +399,10 @@ def home(request):
     all_i_follow = Following.objects.filter(follower=request.user.id).filter(isapproved="yes")
     all_i_follow_and_me = User.objects.filter(Q(id__in = all_i_follow) | Q(id=request.user.id))
     public_timeline_list = Post.objects.filter(poster__in = all_i_follow_and_me).order_by('-id')[:20]
+    is_faved = [Fav.objects.filter(favourited_post=p).filter(favouriter=request.user).__len__() for p in public_timeline_list]
+    is_reposted = [Repost.objects.filter(reposted_post=p).filter(reposter=request.user).__len__() for p in public_timeline_list]
+
+    public_timeline_info = zip(public_timeline_list, is_faved, is_reposted)
         
     latest_received_time = timezone.now()
 
@@ -359,6 +416,6 @@ def home(request):
     context = {
         'latest_received_time' : latest_received_time,
         'oldest_received_time' : oldest_received_time,
-        'public_timeline_list': public_timeline_list,
+        'public_timeline_info': public_timeline_info,
     }
     return HttpResponse(template.render(context, request))

@@ -6,7 +6,7 @@
   {% endblock %}
 	<meta charset="utf-8">
   {% block title %}<title>Khaikang</title>
-  <link type="text/css" rel="stylesheet"  href="{% static 'generic.css' %}"></style>
+  <link type="text/css" rel="stylesheet"  href="{% static 'generic.css' %}?{% now 'U' %}"></style>
   {% endblock %}
 </head>
   <body>

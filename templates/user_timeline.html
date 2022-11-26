@@ -27,14 +27,16 @@ Following: <span class="fo-number">{{user_following_number}}</span> Follower: <s
     <div id="new_post_notifier" value=""></div>
     <div id="latest_time" style="display: block;">{{latest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
 
-    {% for post in viewed_timeline_list %}
+    {% for post in viewed_timeline_info %}
 
-  <div id="post-{{post.id}}" class="post"><a href="/user/{{post.poster}}">{{post.poster.shown_name}}</a>
-    at <a href="/post/{{post.id}}" class="post-time">{{post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
-    {{post.text|linebreaksbr}}<br/>
-    <span id="reply-{{post.id}}" value="{{post.id}}" class="reply">↩️</span>
-    - <span id="repost-{{post.id}}" value="{{post.id}}" class="repost">🔁</span> 
-    - <span id="fav-{{post.id}}" value="{{post.id}}" class="fav">⭐</span>
+  <div id="post-{{post.0.id}}" class="post">
+    <img class="timeline-avatar-img"src="{{post.0.poster.avatar.url}}">
+    <div class="post-content"><a href="/user/{{post.0.poster}}">{{post.0.poster.shown_name}}</a>
+    at <a href="/post/{{post.0.id}}" class="post-time">{{post.0.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
+    {{post.0.text|linebreaksbr}}<br/>
+    <span id="reply-{{post.0.id}}" data-value="{{post.0.id}}" class="reply">↩️</span>
+    - <span id="repost-{{post.0.id}}" data-value="{{post.0.id}}"  class=" {%if post.1 == 0 %} unchecked{% endif %} repost">🔁</span> 
+    - <span id="fav-{{post.0.id}}" data-value="{{post.0.id}}"class=" {%if post.2 == 0 %}unchecked{% endif %} fav">⭐</span></div>
 </div>
   {% endfor %}
   <div id="previous_post_loader">More posts</div>
@@ -43,7 +45,7 @@ Following: <span class="fo-number">{{user_following_number}}</span> Follower: <s
   </div>
 
 
-  <script type="text/javascript" src="{% static 'timeline.js' %}">
+  <script type="text/javascript" src="{% static 'timeline.js' %}?{% now 'U' %}">
 
 
 

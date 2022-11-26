@@ -36,14 +36,18 @@
     <div id="new_post_notifier" value=""></div>
     <div id="latest_time" style="display: block;">{{latest_received_time|date:"Y-m-d H:i:s.u"}}+0000</div>
 
-    {% for public_post in public_timeline_list %}
+    {% for public_post in public_timeline_info %}
 
-  <div id="post-{{public_post.id}}" class="post"><a href="/user/{{public_post.poster}}">{{public_post.poster.shown_name}}</a>
-    at <a href="/post/{{public_post.id}}" class="post-time">{{public_post.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
-    {{public_post.text|linebreaksbr}}<br/>
-    <span id="reply-{{public_post.id}}" value="{{public_post.id}}" class="reply">↩️</span>
-    - <span id="repost-{{public_post.id}}" value="{{public_post.id}}" class="repost">🔁</span> 
-    - <span id="fav-{{public_post.id}}" value="{{public_post.id}}" class="fav">⭐</span>
+  <div id="post-{{public_post.0.id}}" class="post">
+    <img class="timeline-avatar-img" src="{{public_post.0.poster.avatar.url}}">
+    <div class="post-content">
+    <a href="/user/{{public_post.0.poster}}">{{public_post.0.poster.shown_name}}</a>
+    at <a href="/post/{{public_post.0.id}}" class="post-time">{{public_post.0.post_time|date:"Y-m-d H:i:s.u"}}+0000</a><br/>
+    {{public_post.0.text|linebreaksbr}}<br/>
+    <span id="reply-{{public_post.0.id}}" data-value="{{public_post.0.id}}" class="reply">↩️</span>
+    - <span id="repost-{{public_post.0.id}}" data-value="{{public_post.0.id}}" class=" {%if public_post.1 == 0 %} unchecked{% endif %} repost">🔁</span> 
+    - <span id="fav-{{public_post.0.id}}" data-value="{{public_post.0.id}}" class=" {%if public_post.2 == 0 %} unchecked{% endif %} fav">⭐</span>
+    </div>
 </div>
   {% endfor %}
   <div id="previous_post_loader">More posts</div>
@@ -52,7 +56,7 @@
   </div>
 
 
-  <script type="text/javascript" src="{% static 'timeline.js' %}">
+  <script type="text/javascript" src="{% static 'timeline.js' %}?{% now 'U' %}">
 
 
 

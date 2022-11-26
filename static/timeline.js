@@ -137,8 +137,10 @@ body: JSON.stringify({
         return item['older_posts'];})
 .then(posts => {if (posts.length == 0)
         {$('previous_post_loader').style.display = 'none';}
-        else{posts.forEach(post => appendPostToTheEnd(post));
-                    $('oldest_time').innerHTML = new_oldest_time;}})
+        else{posts.forEach(post => 
+            appendPostToTheEnd(post));
+            updateClickedIconEvent();
+            $('oldest_time').innerHTML = new_oldest_time;}})
 }
 
 
@@ -185,6 +187,7 @@ body: JSON.stringify({
 $('new_post_notifier').style.display = "none";
 var nowTime = new Date();
 var nowTimeString = nowTime.toISOString();
+updateClickedIconEvent();
 $("latest_time").innerHTML = nowTimeString.substring(0,10) + " " + nowTimeString.substring(11,23) + "000+0000"; });
 }
 
@@ -194,12 +197,16 @@ var new_div = document.createElement("div");
 new_div.id =  `post-${post.id}`;
 new_div.className = "post";
 post_text_replaced = post.text.replace(/(\r\n|\n\r|\r|\n)/g, "<br>" );
-new_div.innerHTML = `<a href="/user/${post.poster_username}">${post.poster_shown_name}</a>
+new_div.innerHTML = `
+<img class="timeline-avatar-img" width="100" src="${post.poster_avatar}">
+<div class="post-content">
+<a href="/user/${post.poster_username}">${post.poster_shown_name}</a>
 at <a href="/post/${post.id}" class="post-time">${post.post_time}</a><br>
 ${post_text_replaced}<br>
-<span id="reply-${post.id}" value="${post.id}" class="reply">↩️</span>
-- <span id="repost-${post.id}" value="${post.id}" class="repost">🔁</span> 
-- <span id="fav-${post.id}" value="${post.id}" class="fav">⭐</span>`;
+<span id="reply-${post.id}" data-value="${post.id}" class="reply">↩️</span>
+- <span id="repost-${post.id}" data-value="${post.id}" class="${(post.is_reposted == "0" ? "unchecked" : "")} repost">🔁</span> 
+- <span id="fav-${post.id}" data-value="${post.id}" class="${(post.is_faved == "0" ? "unchecked" : "")} fav">⭐</span>
+</div>`;
 
 new_div_timestamp = new_div.getElementsByClassName('post-time')[0];
 
@@ -220,11 +227,66 @@ public_tl.insertBefore(new_div, $('latest_time').nextSibling);
 $("new_post_notifier").addEventListener('click', getLatestPosts);
 $("previous_post_loader").addEventListener('click', getPreviousPosts);
 
+async function makeRepostRequest(event){
+    var postId = event.target.getAttribute('data-value');
+    await fetch(`/api/repost_request/${postId}`, {
+        method: 'POST',
+        headers: {
+        "X-CSRFToken": csrf_token,
+        'Content-Type': 'application/json',
+        },
+        body : ""
+    }).then(response => response.json())
+    .then(item => item['status'])
+    .then(status =>{
+        if (status == "reposted"){
+            event.target.classList.remove("unchecked");
+        }else if (status == "deleted"){
+            event.target.classList.add("unchecked");
+        }
+    });
+}
+
+
+async function makeFavRequest(event){
+    var postId = event.target.getAttribute('data-value');
+    await fetch(`/api/fav_request/${postId}`, {
+        method: 'POST',
+        headers: {
+        "X-CSRFToken": csrf_token,
+        'Content-Type': 'application/json',
+        },
+        body : ""
+    }).then(response => response.json())
+    .then(item => item['status'])
+    .then(status =>{
+        if (status == "faved"){
+            event.target.classList.remove("unchecked");
+        }else if (status == "deleted"){
+            event.target.classList.add("unchecked");
+        }
+    });
+}
+
+function updateClickedIconEvent(){
+    var reposted_items = document.getElementsByClassName('repost');
+    for (var i = 0; i < reposted_items.length; i++) {
+        reposted_items[i].addEventListener('click', makeRepostRequest);
+    }
+    var reposted_items = document.getElementsByClassName('fav');
+    for (var i = 0; i < reposted_items.length; i++) {
+        reposted_items[i].addEventListener('click', makeFavRequest);
+    }
+}
+
+updateClickedIconEvent()
 
 if (requestNote["type"] == "home"){
     $("submit_post").addEventListener('click', make_req);
     adjust_post_text();
 }
 if (requestNote["type"] == "user"){
-    $("follow-user-button").addEventListener('click', make_follow_req);
+    if ($("follow-user-button")){
+        $("follow-user-button").addEventListener('click', make_follow_req);
+    }
 }

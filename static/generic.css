@@ -1,9 +1,40 @@
-div.avatar-preview{
+.post{
+    display:flex;
+}
+.post-content{
+    flex-direction: row;
+}
+
+.timeline-avatar-img{
+    flex-direction: row;
+    width:70px;
+    height:70px;
 
 }
 
 #avatar-img{
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     object-fit: cover;
+}
+
+.reply{
+    filter: grayscale(1);
+}
+
+.reply:hover{
+    filter: grayscale(0);
+}
+
+
+.unchecked{
+    filter: grayscale(1);
+}
+
+.repost:hover{
+    filter: grayscale(0);
+}
+
+.fav:hover{
+    filter: grayscale(0);
 }
